@@ -61,7 +61,7 @@ public class JsonParser {
             list.add(parseValue());
             skipWhitespace();
             if (peek() == ']') { pos++; break; }
-            if (peek() == ',') { continue; }
+            if (peek() == ',') { pos++; continue; }
             throw new JsonParseException("Expected ',' or ']' in array at " + pos);
         }
         return new JsonValue(list);
@@ -73,6 +73,9 @@ public class JsonParser {
         while (peek() != '"') {
             if (peek() == '\\') {
                 pos++;
+                if (pos >= input.length()) {
+                    throw new JsonParseException("Unterminated escape sequence");
+                }
                 char c = input.charAt(pos);
                 switch (c) {
                     case '"': sb.append('"'); break;
@@ -84,8 +87,18 @@ public class JsonParser {
                     case 'r': sb.append('\r'); break;
                     case 't': sb.append('\t'); break;
                     case 'u':
+                        // FIX: ensure there are at least 4 hex digits
+                        if (pos + 4 >= input.length()) {
+                            throw new JsonParseException("Incomplete unicode escape at pos " + pos);
+                        }
                         String hex = input.substring(pos + 1, pos + 5);
-                        sb.append((char) Integer.parseInt(hex, 16));
+
+
+                        try {
+                            sb.append((char) Integer.parseInt(hex, 16));
+                        } catch (NumberFormatException ex) {
+                            throw new JsonParseException("Invalid unicode escape at pos " + pos + ": '" + hex + "'");
+                        }
                         pos += 4;
                         break;
 
