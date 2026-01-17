@@ -45,21 +45,21 @@ public class Store {
                         int stock = inventory.getOrDefault(itemString, 0);
 
 
-                        inventory.put(itemString, stock - qty);
+
                         if (stock < qty) {
                             logs.add("Not enough stock for " + itemString);
                             failed++;
                             continue;
                         }
 
+                        inventory.put(itemString, stock - qty);
 
 
 
 
 
 
-
-                        total += price * qty * (1.0 - discount);
+                        total += price * qty;
 
                         processed++;
                     } catch (Exception e) {
