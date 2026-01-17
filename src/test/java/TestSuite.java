@@ -1,9 +1,6 @@
-import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import com.code_intelligence.jazzer.junit.FuzzTest;
-import com.example.JsonParseException;
 import com.example.JsonParser;
 import com.example.JsonValue;
-import com.example.Main;
+import com.example.Store;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -79,14 +76,14 @@ public class TestSuite {
           "storeId": "S1",
           "discount": 0.1,
           "items": [
-            {"sku": "SKU-APPLE", "price": 1.0, "quantity": 10},
-            {"sku": "SKU-BANANA", "price": 2.0, "quantity": 5}
+            {"product": "APPLE", "price": 1.0, "quantity": 10},
+            {"product": "BANANA", "price": 2.0, "quantity": 5}
           ]
         }""";
 
         JsonValue root = JsonParser.parse(json);
-        Main.StoreProcessor processor = new Main.StoreProcessor();
-        Main.Report report = processor.processOrder(root);
+        Store.StoreProcessor processor = new Store.StoreProcessor();
+        Store.Report report = processor.processOrder(root);
 
         assertEquals(2, report.itemsProcessed);
         assertEquals(0, report.itemsFailed);
@@ -96,15 +93,15 @@ public class TestSuite {
 
 
     @Test
-    void testInvalidSkuIsLoggedAndFails() {
+    void testInvalidProductIsLoggedAndFails() {
         String json = """
         {"orderId":"ORD-200","storeId":"S1","items":[
-          {"sku":"SKU-NOTFOUND","price":1.0,"quantity":2}
+          {"product":"NOTFOUND","price":1.0,"quantity":2}
         ]}""";
 
         JsonValue root = JsonParser.parse(json);
-        Main.StoreProcessor processor = new Main.StoreProcessor();
-        Main.Report report = processor.processOrder(root);
+        Store.StoreProcessor processor = new Store.StoreProcessor();
+        Store.Report report = processor.processOrder(root);
 
         assertEquals(0, report.itemsProcessed);
         assertEquals(1, report.itemsFailed);
@@ -115,11 +112,11 @@ public class TestSuite {
     void testNegativePriceFails() {
         String json = """
         {"orderId":"ORD-300","storeId":"S1","items":[
-          {"sku":"SKU-APPLE","price":-5,"quantity":2}
+          {"product":"APPLE","price":-5,"quantity":2}
         ]}""";
         JsonValue root = JsonParser.parse(json);
-        Main.StoreProcessor processor = new Main.StoreProcessor();
-        Main.Report report = processor.processOrder(root);
+        Store.StoreProcessor processor = new Store.StoreProcessor();
+        Store.Report report = processor.processOrder(root);
 
         assertEquals(0, report.itemsProcessed);
         assertEquals(1, report.itemsFailed);
@@ -129,15 +126,15 @@ public class TestSuite {
 void testStockinsufficient() {
     String json = """
        {"orderId":"ORD-400","storeId":"S1","items":[
-         {"sku":"SKU-CHAIR","price":50,"quantity":999}
+         {"product":"CHAIR","price":50,"quantity":999}
        ]}""";
 
     JsonValue root = JsonParser.parse(json);
-    Main.StoreProcessor processor = new Main.StoreProcessor();
-    Main.Report report = processor.processOrder(root);
+    Store.StoreProcessor processor = new Store.StoreProcessor();
+    Store.Report report = processor.processOrder(root);
 
 
-    assertEquals(10, report.inventorySnapshot.get("SKU-CHAIR"));
+    assertEquals(10, report.inventorySnapshot.get("CHAIR"));
 }
 
 
@@ -145,11 +142,11 @@ void testStockinsufficient() {
     void testDiscountZeroOrMissingHandled() {
         String json = """
         {"orderId":"ORD-500","storeId":"S1","items":[
-          {"sku":"SKU-APPLE","price":2.0,"quantity":2}
+          {"product":"APPLE","price":2.0,"quantity":2}
         ]}""";
         JsonValue root = JsonParser.parse(json);
-        Main.StoreProcessor processor = new Main.StoreProcessor();
-        Main.Report report = processor.processOrder(root);
+        Store.StoreProcessor processor = new Store.StoreProcessor();
+        Store.Report report = processor.processOrder(root);
 
         assertEquals(4.0, report.subtotal);
         assertEquals(report.subtotal, report.total); // no discount applied
@@ -160,8 +157,8 @@ void testStockinsufficient() {
         String json = """
         {"orderId":"ORD-600","storeId":"S1","items":[]}""";
         JsonValue root = JsonParser.parse(json);
-        Main.StoreProcessor processor = new Main.StoreProcessor();
-        Main.Report report = processor.processOrder(root);
+        Store.StoreProcessor processor = new Store.StoreProcessor();
+        Store.Report report = processor.processOrder(root);
 
         assertEquals(0, report.itemsProcessed);
         assertEquals(0, report.itemsFailed);
@@ -172,15 +169,17 @@ void testStockinsufficient() {
     void testMissingItemsFieldHandled() {
         String json = "{\"orderId\":\"ORD-700\",\"storeId\":\"S1\"}";
         JsonValue root = JsonParser.parse(json);
-        Main.StoreProcessor processor = new Main.StoreProcessor();
-        Main.Report report = processor.processOrder(root);
+        Store.StoreProcessor processor = new Store.StoreProcessor();
+        Store.Report report = processor.processOrder(root);
 
         assertEquals(0, report.itemsProcessed);
         assertTrue(report.logs.isEmpty()); // no items mean nothing to process
     }
 
+
+
+
+
  */
-
-
 
 }
