@@ -2,7 +2,7 @@ package com.example;
 
 import java.util.*;
 
-public class Main {
+public class Store {
 
     // Represents a simple store that handles JSON orders
     public static class StoreProcessor {
@@ -10,9 +10,9 @@ public class Main {
         private final List<String> logs = new ArrayList<>();
 
         public StoreProcessor() {
-            inventory.put("SKU-APPLE", 100);
-            inventory.put("SKU-BANANA", 200);
-            inventory.put("SKU-CHAIR", 10);
+            inventory.put("APPLE", 100);
+            inventory.put("BANANA", 200);
+            inventory.put("CHAIR", 10);
         }
 
         public Report processOrder(JsonValue root) {
@@ -32,26 +32,25 @@ public class Main {
             if (items.isArray()) {
                 for (JsonValue item : items.asArray()) {
                     try {
-                        String sku = item.get("sku").asString();
+                        String itemString = item.get("product").asString();
                         double price = item.get("price").isNumber() ? item.get("price").asNumber().doubleValue() : 0.0;
                         int qty = item.get("quantity").isNumber() ? item.get("quantity").asNumber().intValue() : 0;
 
-                        if (sku == null || qty <= 0 || price < 0) {
+                        if (itemString == null || qty <= 0 || price < 0) {
                             logs.add("Invalid item in order " + orderId);
                             failed++;
                             continue;
                         }
 
-                        int stock = inventory.getOrDefault(sku, 0);
+                        int stock = inventory.getOrDefault(itemString, 0);
 
 
-
+                        inventory.put(itemString, stock - qty);
                         if (stock < qty) {
-                            logs.add("Not enough stock for " + sku);
+                            logs.add("Not enough stock for " + itemString);
                             failed++;
                             continue;
                         }
-                        inventory.put(sku, stock - qty);
 
 
 
@@ -60,7 +59,7 @@ public class Main {
 
 
 
-                        total += price * qty;
+                        total += price * qty * (1.0 - discount);
 
                         processed++;
                     } catch (Exception e) {
@@ -113,8 +112,8 @@ public class Main {
     public static void main(String[] args) {
         String json = "{ \"orderId\": \"ORD-001\", \"storeId\": \"S1\", \"discount\": 0.1, " +
                 "\"items\": [" +
-                "{\"sku\": \"SKU-APPLE\", \"price\": 1.2, \"quantity\": 3}," +
-                "{\"sku\": \"SKU-CHAIR\", \"price\": 49.99, \"quantity\": 1}" +
+                "{\"product\": \"APPLE\", \"price\": 1.2, \"quantity\": 3}," +
+                "{\"product\": \"CHAIR\", \"price\": 49.99, \"quantity\": 1}" +
                 "]}";
 
         try {
