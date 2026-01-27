@@ -12,7 +12,11 @@ public class Store {
         public StoreProcessor() {
             inventory.put("APPLE", 100);
             inventory.put("BANANA", 200);
-            inventory.put("CHAIR", 10);
+            inventory.put("ORANGE", 10);
+
+        }
+        public Map<String, Integer> getInventorySnapshot() {
+            return new HashMap<>(inventory);
         }
 
         public Report processOrder(JsonValue root) {
@@ -113,7 +117,7 @@ public class Store {
         String json = "{ \"orderId\": \"ORD-001\", \"storeId\": \"S1\", \"discount\": 0.1, " +
                 "\"items\": [" +
                 "{\"product\": \"APPLE\", \"price\": 1.2, \"quantity\": 3}," +
-                "{\"product\": \"CHAIR\", \"price\": 49.99, \"quantity\": 1}" +
+                "{\"product\": \"ORANGE\", \"price\": 49.99, \"quantity\": 1}" +
                 "]}";
 
         try {

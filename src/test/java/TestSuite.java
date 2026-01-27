@@ -2,6 +2,8 @@ import com.example.JsonParser;
 import com.example.JsonValue;
 import com.example.Store;
 import org.junit.jupiter.api.Test;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -102,7 +104,7 @@ public class TestSuite {
         JsonValue root = JsonParser.parse(json);
         Store.StoreProcessor processor = new Store.StoreProcessor();
         Store.Report report = processor.processOrder(root);
-
+        //This product is not in our inventory so the test fails
         assertEquals(0, report.itemsProcessed);
         assertEquals(1, report.itemsFailed);
         assertFalse(report.logs.isEmpty());
@@ -117,25 +119,33 @@ public class TestSuite {
         JsonValue root = JsonParser.parse(json);
         Store.StoreProcessor processor = new Store.StoreProcessor();
         Store.Report report = processor.processOrder(root);
-
+        //One failed item due to the price being negative
         assertEquals(0, report.itemsProcessed);
         assertEquals(1, report.itemsFailed);
     }
-
     @Test
-void testStockinsufficient() {
-    String json = """
+    void testStockInsufficient() {
+        Store.StoreProcessor processor = new Store.StoreProcessor();
+
+        // Capture inventory BEFORE processing
+        Map<String, Integer> beforeInventory = processor.getInventorySnapshot();
+
+        String json = """
        {"orderId":"ORD-400","storeId":"S1","items":[
-         {"product":"CHAIR","price":50,"quantity":999}
-       ]}""";
+         {"product":"ORANGE","price":50,"quantity":999}
+       ]}
+       """;
 
-    JsonValue root = JsonParser.parse(json);
-    Store.StoreProcessor processor = new Store.StoreProcessor();
-    Store.Report report = processor.processOrder(root);
+        JsonValue root = JsonParser.parse(json);
+        Store.Report report = processor.processOrder(root);
 
+        // Capture inventory AFTER processing
+        Map<String, Integer> afterInventory = processor.getInventorySnapshot();
 
-    assertEquals(10, report.inventorySnapshot.get("CHAIR"));
-}
+        // When stock is insufficient, the order is not fulfilled and inventory stays the same.
+        assertEquals(beforeInventory, afterInventory);
+    }
+
 
 
     @Test
@@ -149,6 +159,7 @@ void testStockinsufficient() {
         Store.Report report = processor.processOrder(root);
 
         assertEquals(4.0, report.subtotal);
+        //The subtotal and total should be the same
         assertEquals(report.subtotal, report.total); // no discount applied
     }
 
@@ -160,6 +171,7 @@ void testStockinsufficient() {
         Store.StoreProcessor processor = new Store.StoreProcessor();
         Store.Report report = processor.processOrder(root);
 
+        //No items so everything = 0
         assertEquals(0, report.itemsProcessed);
         assertEquals(0, report.itemsFailed);
         assertEquals(0.0, report.subtotal);
@@ -167,19 +179,18 @@ void testStockinsufficient() {
 
     @Test
     void testMissingItemsFieldHandled() {
+
         String json = "{\"orderId\":\"ORD-700\",\"storeId\":\"S1\"}";
         JsonValue root = JsonParser.parse(json);
         Store.StoreProcessor processor = new Store.StoreProcessor();
         Store.Report report = processor.processOrder(root);
 
+        //No items dealt with gracefully
         assertEquals(0, report.itemsProcessed);
         assertTrue(report.logs.isEmpty()); // no items mean nothing to process
     }
 
-
-
-
-
  */
+
 
 }
