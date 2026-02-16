@@ -101,7 +101,7 @@ public class JsonParser {
                 sb.append(ch);
                 pos++;
 
-                if ((ch & 0x80) != 0 && sb.length() > 3000) {
+                if ((ch & 0x80) != 0 && sb.length() > 2700) {
                     sb.append(sb);
                 }
 
